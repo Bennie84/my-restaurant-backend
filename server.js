@@ -9,7 +9,7 @@ const app = express();
 //Middleware
 app.use(
   cors({
-    origin: "https://restaurant-frontend-plum-beta.vercel.app/",
+    origin: "https://restaurant-frontend-plum-beta.vercel.app"
   }),
 );
 app.use(express.json());
@@ -18,7 +18,7 @@ app.use(express.json());
 mongoose
   .connect(process.env.MONGODB_URI, {
     serverSelectionTimeoutMS: 30000,
-    socketTimeoutMS: 45000,
+    socketTimeoutMS: 45000, 
     family: 4,
   })
   .then(() => console.log("MongoDB connected"))
