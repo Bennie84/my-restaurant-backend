@@ -1,48 +1,18 @@
 const express = require("express");
-const mongoose = require("mongoose");
+// const mongoose = require("mongoose");
 const cors = require("cors");
 const axios = require("axios");
 require("dotenv").config();
 
 const app = express();
 
-//Middleware
-app.use(
-  cors({
-    origin: "https://restaurant-frontend-plum-beta.vercel.app"
-  }),
-);
+app.use(cors());
 app.use(express.json());
 
-//Connect to MongoDB
-mongoose
-  .connect(process.env.MONGODB_URI, {
-    serverSelectionTimeoutMS: 30000,
-    socketTimeoutMS: 45000, 
-    family: 4,
-  })
-  .then(() => console.log("MongoDB connected"))
-  .catch((err) => console.log("MongoDB error:", err.message));
+// MongoDB connection and order persistence were removed to restore the previous backend structure.
+// The admin dashboard and order storage endpoints are disabled, but the file structure remains.
 
-//Order Schema
-const orderSchema = new mongoose.Schema({
-  reference: String,
-  email: String,
-  amount: Number,
-  items: Array,
-  status: {
-    type: String,
-    default: "pending",
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
-});
-
-const Order = mongoose.model("Order", orderSchema);
-
-//Verify payment and save order
+//Verify payment
 app.post("/verify-payment", async (req, res) => {
   const { reference, email, amount, items } = req.body;
 
@@ -67,24 +37,11 @@ app.post("/verify-payment", async (req, res) => {
     const paymentData = response.data.data;
 
     if (paymentData.status === "success") {
-      console.log("Payment verified successfully, saving order...");
-
-      //Save order to database
-      const order = new Order({
-        reference,
-        email,
-        amount,
-        items,
-        status: "confirmed",
-      });
-
-      await order.save();
-      console.log("Order saved successfully:", order._id);
+      console.log("Payment verified successfully");
 
       res.json({
         success: true,
-        message: "Payment verified and order saved",
-        orderId: order._id,
+        message: "Payment verified",
       });
     } else {
       console.log("Payment verification failed. Status:", paymentData.status);
@@ -104,24 +61,17 @@ app.post("/verify-payment", async (req, res) => {
   }
 });
 
-//Get order by ID
-app.get("/order/:id", async (req, res) => {
-  try {
-    const order = await Order.findById(req.params.id);
-    if (!order) {
-      return res.status(404).json({
-        message: "Order not found",
-      });
-    }
-    res.json(order);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({
-      message: "Server error",
-    });
-  }
-});
+// Admin dashboard and order management routes were removed to restore the original backend structure.
+// The files remain for structure, but those endpoints are no longer active.
 
 //Start server
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, () => {
+  console.log(`\n✅ Server running on port ${PORT}`);
+  console.log(`📍 API available at http://localhost:${PORT}`);
+  if (!process.env.MONGODB_URI) {
+    console.log(`\n⚠️  WARNING: MONGODB_URI not found in .env`);
+    console.log(`Please add it: MONGODB_URI=mongodb+srv://user:password@cluster.mongodb.net/dbname`);
+  }
+  console.log("");
+});
